@@ -34,12 +34,9 @@ from time import time
 
 tf.app.flags.DEFINE_string(name="data_dir", default="./datasets", help="The directory to the dataset.")
 
-# tf.app.flags.DEFINE_string(name="train_dir", default="./tf_model/teacher_student", help="The directory to the model checkpoint, tensorboard and log.") 
-
 tf.app.flags.DEFINE_string(name="t_s_logs_dir", default="./logs/", help="The directory to the model checkpoint, tensorboard and log.")
 
 tf.app.flags.DEFINE_string(name="teacher_dir", default="./logs/v2/teacher", help="The directory to the pre-trained  teachernet weights.")
-# : change teachernet_model path
 
 tf.app.flags.DEFINE_integer(name="batch_size", default=128, help="The number of samples in each batch.")
 
@@ -104,8 +101,7 @@ def teacher(input_images,
         t_at3 = tf.nn.l2_normalize(tf.reduce_sum(tf.square(t_p_o), -1), axis=0, name='t_at4')
         object_feature = endpoints["Conv2d_8"]
         t_at4 = tf.nn.l2_normalize(tf.reduce_sum(tf.square(object_feature), -1), axis=0, name='t_at5')
-        # print(t_at1.get_shape().as_list())
-        # exit()
+       
         t_g = (t_g0, t_g1, part_feature, object_feature)
         t_at = (t_at0, t_at1, t_at2, t_at3, t_at4)
         
@@ -116,38 +112,7 @@ def teacher(input_images,
             'decay': batch_norm_decay,
             'epsilon': batch_norm_epsilon,
         }
-        # batch_norm_params = {  # 定义batch normalization（标准化）的参数字典
-        #     'is_training': is_training,
-        #     # 是否是在训练模式，如果是在训练阶段，将会使用指数衰减函数（衰减系数为指定的decay），
-        #     # 对moving_mean和moving_variance进行统计特性的动量更新，也就是进行使用指数衰减函数对均值和方
-        #     # 差进行更新,而如果是在测试阶段，均值和方差就是固定不变的，是在训练阶段就求好的，在训练阶段，
-        #     # 每个批的均值和方差的更新是加上了一个指数衰减函数，而最后求得的整个训练样本的均值和方差就是所
-        #     # 有批的均值的均值，和所有批的方差的无偏估计
-    
-        #     'zero_debias_moving_mean': True,
-        #     # 如果为True，将会创建一个新的变量对 'moving_mean/biased' and 'moving_mean/local_step'，
-        #     # 默认设置为False，将其设为True可以增加稳定性
-    
-        #     'decay': batch_norm_decay,             # Decay for the moving averages.
-        #     # 该参数能够衡量使用指数衰减函数更新均值方差时，更新的速度，取值通常在0.999-0.99-0.9之间，值
-        #     # 越小，代表更新速度越快，而值太大的话，有可能会导致均值方差更新太慢，而最后变成一个常量1，而
-        #     # 这个值会导致模型性能较低很多.另外，如果出现过拟合时，也可以考虑增加均值和方差的更新速度，也
-        #     # 就是减小decay
-    
-        #     'epsilon': batch_norm_epsilon,         # 就是在归一化时，除以方差时，防止方差为0而加上的一个数
-        #     'scale': batch_norm_scale,
-        #     'updates_collections': tf.GraphKeys.UPDATE_OPS,     
-        #     # force in-place updates of mean and variance estimates
-        #     # 该参数有一个默认值，ops.GraphKeys.UPDATE_OPS，当取默认值时，slim会在当前批训练完成后再更新均
-        #     # 值和方差，这样会存在一个问题，就是当前批数据使用的均值和方差总是慢一拍，最后导致训练出来的模
-        #     # 型性能较差。所以，一般需要将该值设为None，这样slim进行批处理时，会对均值和方差进行即时更新，
-        #     # 批处理使用的就是最新的均值和方差。
-        #     #
-        #     # 另外，不论是即使更新还是一步训练后再对所有均值方差一起更新，对测试数据是没有影响的，即测试数
-        #     # 据使用的都是保存的模型中的均值方差数据，但是如果你在训练中需要测试，而忘了将is_training这个值
-        #     # 改成false，那么这批测试数据将会综合当前批数据的均值方差和训练数据的均值方差。而这样做应该是不
-        #     # 正确的。
-        # }
+        
         fc_obj = slim.conv2d(fc_obj,
                             M,
                             [1, 1],
@@ -158,10 +123,10 @@ def teacher(input_images,
         fc_obj = tf.nn.dropout(fc_obj, keep_prob=keep_prob)
         fc_obj = slim.flatten(fc_obj)
         fc_part = slim.conv2d(part_feature,
-                            M * k,          #卷积核个数
-                            [1, 1],         #卷积核高宽
+                            M * k,          
+                            [1, 1],         
                             activation_fn=tf.nn.relu,
-                            normalizer_fn=slim.batch_norm,                               # 标准化器设置为BN
+                            normalizer_fn=slim.batch_norm,                               
                             normalizer_params=batch_norm_params,
                             weights_regularizer=tf.contrib.layers.l2_regularizer(weight_decay),
                             biases_regularizer=tf.contrib.layers.l2_regularizer(weight_decay)
@@ -170,7 +135,7 @@ def teacher(input_images,
         fc_part = slim.max_pool2d(fc_part, (6, 8), scope="GMP2")
         ft_list = tf.split(fc_part,
                         num_or_size_splits=FLAGS.num_class,
-                        axis=-1)            #最后一维度（C）
+                        axis=-1)            
         cls_list = []
         for i in range(M):
             ft = tf.transpose(ft_list[i], [0, 1, 3, 2])
@@ -179,7 +144,7 @@ def teacher(input_images,
                                 "AVG")
             cls = layers.flatten(cls)
             cls_list.append(cls)
-        fc_ccp = tf.concat(cls_list, axis=-1) #cross_channel_pooling (N, M)
+        fc_ccp = tf.concat(cls_list, axis=-1) 
 
         fc_part = slim.conv2d(fc_part,
                             FLAGS.num_class,
@@ -222,8 +187,7 @@ def student(input_images,
     
         s_part_feature = s_g2
         s_object_feature = s_g4
-        # print(s_object_feature.get_shape())
-        # exit()
+        
         base_var_list = slim.get_model_variables('Student_model/student')
 
         batch_norm_params = {
@@ -246,10 +210,10 @@ def student(input_images,
 
         
         s_fc_part = slim.conv2d(s_part_feature,
-                            M * k,                #卷积核个数
-                            [1, 1],               #卷积核高宽
+                            M * k,                
+                            [1, 1],               
                             activation_fn=tf.nn.relu,
-                            normalizer_fn=slim.batch_norm,                               # 标准化器设置为BN
+                            normalizer_fn=slim.batch_norm,                               
                             normalizer_params=batch_norm_params,
                             weights_regularizer=tf.contrib.layers.l2_regularizer(weight_decay),
                             biases_regularizer=tf.contrib.layers.l2_regularizer(weight_decay)
@@ -257,7 +221,7 @@ def student(input_images,
         s_fc_part = slim.max_pool2d(s_fc_part, (6, 8), scope="s_GMP2")
         s_ft_list = tf.split(s_fc_part,
                         num_or_size_splits=FLAGS.num_class,
-                        axis=-1)                  #最后一维度（C）
+                        axis=-1)                  
         s_cls_list = []
         for i in range(M):
             s_ft = tf.transpose(s_ft_list[i], [0, 1, 3, 2])
@@ -266,7 +230,7 @@ def student(input_images,
                                 "AVG")
             s_cls = layers.flatten(s_cls)
             s_cls_list.append(s_cls)
-        s_fc_ccp = tf.concat(s_cls_list, axis=-1)    #cross_channel_pooling (N, M)
+        s_fc_ccp = tf.concat(s_cls_list, axis=-1)    
 
         s_fc_part = slim.conv2d(s_fc_part,
                             FLAGS.num_class,
@@ -290,18 +254,6 @@ def student(input_images,
 def train(loss_val, base_var_list, var_list, lr, clip_value): 
     print('base_var_list:{b},var_list:{v}'.format(b=len(base_var_list),v=len(var_list)))
 
-    # for i in [4,7]：
-    #     with tf.debice('/gpu:%d'%i)
-    #         with tf.name_scope('GPU_%d'%i) as scope:
-    #             #tf.get_variable的命名空间
-    #             tf.get_variable_scope().reuse_variables()
-    #             #使用当前gpu计算所有变量的梯度
-    #             grads= opt.compute_gradients(cur_loss)
-    #             tower_grads.append(grads)
-    # #计算变量的平均梯度
-    # grads = average_gradients(tower_grads)
-    # #使用平均梯度更新参数
-    # apply_gradient_op = opt.apply_gradients(grads,global_step = global)
 
     opt = tf.train.AdamOptimizer
     fc_optimizer = opt(learning_rate=lr)
@@ -322,7 +274,7 @@ def train(loss_val, base_var_list, var_list, lr, clip_value):
     train_fc = fc_optimizer.apply_gradients(clipped_fc_grads)
     train_net = net_optimizer.apply_gradients(clipped_net_grads)
     train_op = tf.group(train_fc, train_net)
-    # print('base_var_list:{b},var_list:{v}'.format(b=len(base_var_list),v=len(var_list)))
+    
     return train_op
 
 def accuracy_top1(y_true, predictions):
@@ -495,7 +447,7 @@ def main(argv=None):
     saver_t = tf.train.Saver(t_var_list, max_to_keep=3)
     train_writer = tf.summary.FileWriter(os.path.join(FLAGS.t_s_logs_dir, 'train'),
                                         sess.graph)
-    #改路径 FLAGS.train_dir
+    
     valid_writer = tf.summary.FileWriter(os.path.join(FLAGS.t_s_logs_dir, 'valid'),
                                         sess.graph)
 
@@ -530,10 +482,7 @@ def main(argv=None):
         clipvalue = 0.0005
         global_step = tf.train.get_or_create_global_step()
         epoch_st = global_step // train_batch + 1
-        # print(sess.run(epoch_st))
-        # exit()
-        # if FLAGS.debug:
-        # epoch_start = epoch_st.eval(session=sess)  
+        
         current = 0.0001
         for epoch in range(58, FLAGS.epoches if FLAGS.debug else 1):
         
