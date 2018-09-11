@@ -12,4 +12,7 @@ In this work ,I use MobileNet(v1/v2) as the the basemodel,differing from the pap
   
 * Then train student networks with attention trasnfer&KD&feature maps mimic, Let *FLAGS.mimic=True*
   >*python t_s.py*
+  
+## TODO
+auto pruning student with KD
 
