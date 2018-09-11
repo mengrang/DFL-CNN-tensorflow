@@ -5,7 +5,7 @@ Tf-implementation of the CVPR2018 [Learning a Discriminative Filter Bank within 
 
 ## Implementation
 
-In this work ,I use MobileNet_v2 as the the basemodel,differing from the paper with VggNet.
+In this work ,I use MobileNet(v1/v2) as the the basemodel,differing from the paper with VggNet.
 
 * First, train the teacher networks, Let *FLAGS.mimic=False*
   >*python t_s.py*
