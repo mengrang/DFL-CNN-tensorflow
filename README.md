@@ -9,10 +9,10 @@
 In this work ,I use MobileNet(v1/v2) as the the basemodel,differing from the paper with VggNet.
 
 * First, train the teacher networks, Let *FLAGS.mimic=False*
-  >python t_s.py
+  >python teacher_student.py
   
 * Then train student networks with attention trasnfer&KD&feature maps mimic, Let *FLAGS.mimic=True*
-  >python t_s.py
+  >python teacher_student.py
  
 ## Reference
 
