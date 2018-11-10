@@ -1,4 +1,4 @@
-# Fine-grained-Recognition-Model-Compression
+# Knowledge-Distillation-for-Fine-grained-Recognition
 
 
 
