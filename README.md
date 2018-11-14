@@ -1,9 +1,10 @@
-# Knowledge-Distillation-for-Fine-grained-Recognition
+# Distillatrons-for-Fine-grained-Recognition
 
 
 
-**Implementation of the CVPR2018 [Learning a Discriminative Filter Bank within a CNN for Fine-grained Recognition](https://arxiv.org/abs/1611.09932);
-Model Compression with with [KD](https://arxiv.org/pdf/1503.02531),  [Attention Trabsfer]( https://arxiv.org/abs/1612.03928),   [Noisy teacher](https://arxiv.org/pdf/1610.09650), and [FitNet](https://arxiv.org/pdf/1412.6550), [Cheap Convolutions](https://arxiv.org/abs/1711.02613) for model compresssion in Tensorflow.**
+Implementation of the CVPR2018 [Learning a Discriminative Filter Bank within a CNN for Fine-grained Recognition](https://arxiv.org/abs/1611.09932);
+ Synthetical Model Compression with **Distillatrons(some Start-of-the-art Konwledge distillation/transfer methods)**:[KD](https://arxiv.org/pdf/1503.02531),  [Attention Trabsfer]( https://arxiv.org/abs/1612.03928),   [Noisy teacher](https://arxiv.org/pdf/1610.09650), and [FitNet](https://arxiv.org/pdf/1412.6550), [Cheap Convolutions](https://arxiv.org/abs/1711.02613) for model compresssion in Tensorflow. 
+
 
 ## Requirements
 First install tensorflow, then install other Python packages:
@@ -31,4 +32,5 @@ In this work ,I use MobileNet(v1/v2) as the the basemodel,differing from the pap
 
 ## TODO
 
-- [ ] auto pruning student with KD
+- [ ] more konwledge distillation/transfer methods
+- [ ] auto pruning with KD
