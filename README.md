@@ -3,7 +3,7 @@
 
 
 Implementation of the CVPR2018 [Learning a Discriminative Filter Bank within a CNN for Fine-grained Recognition](https://arxiv.org/abs/1611.09932);
- Synthetical Model Compression with **Distillatrons(some Start-of-the-art Konwledge distillation/transfer methods)**:[KD](https://arxiv.org/pdf/1503.02531),  [Attention Transfer]( https://arxiv.org/abs/1612.03928),   [Noisy teacher](https://arxiv.org/pdf/1610.09650), and [FitNet](https://arxiv.org/pdf/1412.6550), [Cheap Convolutions](https://arxiv.org/abs/1711.02613) for model compresssion in Tensorflow. 
+ Synthetical Model Compression with **Distillatrons(some Start-of-the-art Konwledge distillation/transfer methods)**:[KD](https://arxiv.org/pdf/1503.02531),  [Attention Transfer]( https://arxiv.org/abs/1612.03928),   [Noisy teacher](https://arxiv.org/pdf/1610.09650), [FitNet](https://arxiv.org/pdf/1412.6550), and [Cheap Convolutions](https://arxiv.org/abs/1711.02613) in Tensorflow. 
 
 
 ## Requirements
