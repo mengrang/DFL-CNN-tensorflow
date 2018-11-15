@@ -6,10 +6,8 @@ import random
 import cv2
 import numpy as np
 import math
-import matplotlib.pyplot as plt
 import time
 from skimage import transform
-import scipy.misc as scm
 from PIL import Image, ImageEnhance, ImageFilter
 
 def cv_imread(filePath):
@@ -76,27 +74,27 @@ def _color_augment(image):
         brightness = random.choice([0.6, 0.8, 1.2, 1.4])
         image = enh_bri.enhance(brightness)
         # image.show()
-    # # 色度增强
-    # if random.choice([0, 1]):
-    #     enh_col = ImageEnhance.Color(image)
-    #     color = random.choice([0.6, 0.8, 1.2, 1.4])
-    #     image = enh_col.enhance(color)
-    #     # image.show()
-    # # 对比度增强
-    # if random.choice([0, 1]):
-    #     enh_con = ImageEnhance.Contrast(image)
-    #     contrast = random.choice([0.6, 0.8, 1.2, 1.4])
-    #     image = enh_con.enhance(contrast)
-    #     # image.show()
-    # # 锐度增强
-    # if random.choice([0, 1]):
-    #     enh_sha = ImageEnhance.Sharpness(image)
-    #     sharpness = random.choice([0.6, 0.8, 1.2, 1.4])
-    #     image = enh_sha.enhance(sharpness)
+    # 色度增强
+    if random.choice([0, 1]):
+        enh_col = ImageEnhance.Color(image)
+        color = random.choice([0.6, 0.8, 1.2, 1.4])
+        image = enh_col.enhance(color)
         # image.show()
-    # # 模糊
-    # if random.choice([0, 1]):
-    #     image = image.filter(ImageFilter.BLUR)
+    # 对比度增强
+    if random.choice([0, 1]):
+        enh_con = ImageEnhance.Contrast(image)
+        contrast = random.choice([0.6, 0.8, 1.2, 1.4])
+        image = enh_con.enhance(contrast)
+        # image.show()
+    # 锐度增强
+    if random.choice([0, 1]):
+        enh_sha = ImageEnhance.Sharpness(image)
+        sharpness = random.choice([0.6, 0.8, 1.2, 1.4])
+        image = enh_sha.enhance(sharpness)
+        image.show()
+    # 模糊
+    if random.choice([0, 1]):
+        image = image.filter(ImageFilter.BLUR)
     image = np.asarray(image)
     return image
 
