@@ -1,9 +1,8 @@
-# -*- coding : utf-8 -*-
+# -*- coding:utf-8 -*-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import sys
-sys.path.append("E:\plant\plant_disease_recognition")
 import tensorflow as tf
 from tensorflow.contrib import slim
 from resnet import resnet_v2
@@ -12,9 +11,7 @@ import time
 import numpy as np
 from time import time
 from dataset import reader
-from tflearn.data_utils import shuffle
-from models.dfb_teacher import teacher
-from models.dfb_student import student
+from models.dfb import dfb
 from dfb_opt import train
 import dfb_utils
 from PIL import Image
@@ -22,15 +19,15 @@ from PIL import Image
 """
 " Log Configuration
 """
-tf.app.flags.DEFINE_string(name="data_dir", default="E:\plant", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="data_dir", default="", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="train_dir", default="AgriculturalDisease_trainingset", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="train_dir", default="", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="test_dir", default="AgriculturalDisease_testA", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="test_dir", default="", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="valid_dir", default="AgriculturalDisease_validationset", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="valid_dir", default="", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="teacher_logs_dir", default="t_logs", help="The directory to the pre-trained  teachernet weights.")
+tf.app.flags.DEFINE_string(name="logs_dir", default="")
 
 tf.app.flags.DEFINE_integer(name="batch_size", default=55, help="The number of samples in each batch.")
 
@@ -44,29 +41,11 @@ tf.app.flags.DEFINE_integer(name="patience", default=2, help="The patience of th
 
 tf.app.flags.DEFINE_boolean(name="debug", default=True, help="Debug mode or not")
 
-tf.app.flags.DEFINE_float(name="alpha",default=0.5, help="The weight of knowledge distillation ")
-
-tf.app.flags.DEFINE_float(name="beta", default=100.0, help="The weight of knowledge distillation ")
-
-tf.app.flags.DEFINE_float(name="T", default=4.0, help="The temprature of knowledge distillation ")
-
-tf.app.flags.DEFINE_float(name="Nratio",default=0.5, help="noisy ratio")
-
-tf.app.flags.DEFINE_float(name="Nsigma",default=0.9, help="noisy sigma")
-
-tf.app.flags.DEFINE_boolean(name="mimic",default=False, help="MImic mode or not")
-
 tf.flags.DEFINE_string(name="mode", default="train", help="Mode train/ test/ visualize")
 
 """
 " Local Parameters
 """
-tf.app.flags.DEFINE_integer(name="input_scale",
-                            default=224,
-                            help="The scale of the input images.")
-tf.app.flags.DEFINE_integer(name="num_atn",
-                            default=4,
-                            help="The number of attention of each image.")
 FLAGS = tf.app.flags.FLAGS
 
 M = FLAGS.num_class
@@ -91,33 +70,32 @@ def main(argv=None):
     """
     ""inference
     """
-    t_co_list, t_g, t_at, fc_obj, fc_part, fc_ccp, base_var_list, t_var_list = teacher(input_images, keep_prob, is_training=is_training)
+    t_co_list, t_g, t_at, fc_obj, fc_part, fc_ccp, base_var_list, t_var_list = dfb(input_images, keep_prob, is_training=is_training)
     # Predictions 
     t_predictions = (tf.nn.softmax(fc_part) + 0.1 * tf.nn.softmax(fc_ccp) + tf.nn.softmax(fc_obj)) / 3.
     
     """
-    ""teachernet loss
+    ""Loss
     """
-    if not FLAGS.mimic:
-        obj_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=fc_obj))
-        part_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=fc_part))
-        ccp_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=fc_ccp))
-        loss = 0.1 * ccp_loss + part_loss + obj_loss
-        acc_top1 = dfb_utils.accuracy_top1(y_true, t_predictions)
-        acc_top5 = dfb_utils.accuracy_top5(y_true, t_predictions)
-        """
-        ""Summary
-        """
-        tf.summary.scalar("t_obj_loss", obj_loss)
-        tf.summary.scalar("t_part_loss", part_loss)
-        tf.summary.scalar("t_ccp_loss", ccp_loss)
-        tf.summary.scalar("t_loss", loss)
-        tf.summary.scalar("acc_top1", acc_top1)
-        tf.summary.scalar("acc_top5", acc_top5)
+    obj_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=fc_obj))
+    part_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=fc_part))
+    ccp_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=fc_ccp))
+    loss = 0.1 * ccp_loss + part_loss + obj_loss
+    acc_top1 = dfb_utils.accuracy_top1(y_true, t_predictions)
+    acc_top5 = dfb_utils.accuracy_top5(y_true, t_predictions)
+    """
+    ""Summary
+    """
+    tf.summary.scalar("t_obj_loss", obj_loss)
+    tf.summary.scalar("t_part_loss", part_loss)
+    tf.summary.scalar("t_ccp_loss", ccp_loss)
+    tf.summary.scalar("t_loss", loss)
+    tf.summary.scalar("acc_top1", acc_top1)
+    tf.summary.scalar("acc_top5", acc_top5)
 
-        train_op = train(loss, base_var_list, t_var_list, learning_rate, clip_value)                
-        print("Setting up summary op...")
-        summary_op = tf.summary.merge_all()
+    train_op = train(loss, base_var_list, t_var_list, learning_rate, clip_value)                
+    print("Setting up summary op...")
+    summary_op = tf.summary.merge_all()
     """
     " Loading Data
     """
@@ -152,12 +130,11 @@ def main(argv=None):
     
     print("Setting up Saver...")
     sess = tf.Session(config=tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True)))
-    saver_t = tf.train.Saver(t_var_list, max_to_keep=3)
-    saver_base = tf.train.Saver(base_var_list,max_to_keep=3)
-    train_writer = tf.summary.FileWriter(os.path.join(FLAGS.teacher_logs_dir, 'train'),
+    saver = tf.train.Saver(t_var_list, max_to_keep=3)
+    train_writer = tf.summary.FileWriter(os.path.join(FLAGS.logs_dir, 'train'),
                                         sess.graph)
    
-    valid_writer = tf.summary.FileWriter(os.path.join(FLAGS.teacher_logs_dir, 'valid'),
+    valid_writer = tf.summary.FileWriter(os.path.join(FLAGS.logs_dir, 'valid'),
                                         sess.graph)
 
     
@@ -167,17 +144,9 @@ def main(argv=None):
     """
     " Resume
     """
-    ckpt_t = tf.train.get_checkpoint_state(FLAGS.teacher_logs_dir)
-    if ckpt_t and ckpt_t.model_checkpoint_path:
-        print('teacher:', ckpt_t.model_checkpoint_path)
-        saver_t.restore(sess, ckpt_t.model_checkpoint_path)
-        saver_base = tf.train.Saver(base_var_list,max_to_keep=3)
-        print("Model restored...")
-    ckpt_base = tf.train.get_checkpoint_state(FLAGS.teacher_logs_dir + '/base')
-    if ckpt_base and ckpt_base.model_checkpoint_path:
-        print('base:', ckpt_t.model_checkpoint_path)
-        # saver_t.restore(sess, ckpt_t.model_checkpoint_path)
-        saver_base.restore(sess, ckpt_base.model_checkpoint_path)
+    ckpt = tf.train.get_checkpoint_state(FLAGS.logs_dir)
+    if ckpt and ckpt.model_checkpoint_path:
+        saver.restore(sess, ckpt_t.model_checkpoint_path)
         print("Model restored...")
 
     """
@@ -192,9 +161,8 @@ def main(argv=None):
         clipvalue = 1e-4     
         current = 1e-4
 
-        for epoch in range(63, FLAGS.epoches if FLAGS.debug else 1):
-            print("Epoch %i ----> Starting......" % epoch)      
-            # X_train, Y_train = shuffle(X_train, Y_train)   
+        for epoch in range(1, FLAGS.epoches if FLAGS.debug else 1):
+            print("Epoch %i ----> Starting......" % epoch)        
             start_time = time()        
             """
             " Build learning rate
@@ -207,28 +175,17 @@ def main(argv=None):
             for step in range(train_batch):
                 batch_x = X_train[step * FLAGS.batch_size: (step + 1) * FLAGS.batch_size]
                 batch_y = Y_train[step * FLAGS.batch_size: (step + 1) * FLAGS.batch_size]
-                summary, _ = sess.run([summary_op, train_op],
+                summary, _ , loss_t, loss_ct, loss_ot, loss_pt, acc_1t, acc_5t = \
+                    sess.run([summary_op, train_op, loss, ccp_loss, obj_loss, part_loss, acc_top1, acc_top5],
                                     feed_dict={input_images: batch_x,
                                                 y_true: batch_y,
                                                 keep_prob: 0.3,
                                                 learning_rate: lr,
                                                 clip_value: clipvalue})
-                train_writer.add_summary(summary, step + train_batch * (epoch-1))
-                """
-                ' print the train loss
-                """
-                if (epoch * train_batch + step) % FLAGS.verbose == 0:
-                    if not FLAGS.mimic:
-                        loss_t, loss_ct, loss_ot, loss_pt, acc_1t, acc_5t = \
-                            sess.run([loss, ccp_loss, obj_loss, part_loss, acc_top1, acc_top5],
-                                    feed_dict={input_images: batch_x,
-                                                y_true: batch_y,
-                                                keep_prob: 0.3,
-                                                learning_rate: lr,
-                                                clip_value: clipvalue})
-                        print("Step %i, Loss %0.4f, ccp_loss %0.4f,obj_loss %0.4f,part_loss %0.4f, acc_1 %0.4f,acc_5 %0.4f, lr %.7f,clip:%.7f" %
+                print("Step %i, Loss %0.4f, ccp_loss %0.4f,obj_loss %0.4f,part_loss %0.4f, acc_1 %0.4f,acc_5 %0.4f, lr %.7f,clip:%.7f" %
                                     ((epoch-1) * train_batch + step, loss_t, loss_ct, loss_ot, loss_pt, acc_1t, acc_5t, lr, clipvalue))
                     
+                train_writer.add_summary(summary, step + train_batch * (epoch-1))
             acc1_reg = []
             acc5_reg = []
             loss_reg = []
@@ -252,47 +209,16 @@ def main(argv=None):
             """
             " Save the best model
             """
-            if avg_acc1 - best_acc > 1e-4:
+
+            if avg_acc1 > best_acc:
                 best_acc = avg_acc1
-                saver_t.save(sess=sess,
+                saver.save(sess=sess,
                         save_path=os.path.join(FLAGS.teacher_logs_dir, 'teacher'),
                         global_step=epoch)
-                saver_base.save(sess=sess,
-                        save_path=FLAGS.teacher_logs_dir + '/base',
-                        global_step=epoch)
+
                 print("Save the best model with val_acc %0.4f" % best_acc)
             else:
-                patience = patience + 1
-                print("Patience %i with stayed val_loss %0.4f" % (patience, last_loss))
                 print("Val_acc stay with val_acc %0.4f" % best_acc)
-
-            # if last_loss - avg_loss > 1e-4:
-            #     last_loss = avg_loss
-            #     patience = 0
-            #     print("Patience %i with updated val_loss %0.4f" % (patience, last_loss))
-            # else:
-            #     patience = patience + 1
-            #     print("Patience %i with stayed val_loss %0.4f" % (patience, last_loss))
-
-            # if avg_acc1 > best_acc:
-            #     best_acc = avg_acc1
-            #     saver_t.save(sess=sess,
-            #             save_path=os.path.join(FLAGS.teacher_logs_dir, 'teacher'),
-            #             global_step=epoch)
-            #     saver_base.save(sess=sess,
-            #             save_path=FLAGS.teacher_logs_dir + '/base',
-            #             global_step=epoch)
-            #     print("Save the best model with val_acc %0.4f" % best_acc)
-            # else:
-            #     print("Val_acc stay with val_acc %0.4f" % best_acc)
-
-            # if last_loss - avg_loss > 1e-4:
-            #     last_loss = avg_loss
-            #     patience = 0
-            #     print("Patience %i with updated val_loss %0.4f" % (patience, last_loss))
-            # else:
-            #     patience = patience + 1
-            #     print("Patience %i with stayed val_loss %0.4f" % (patience, last_loss))
 
             if patience >= FLAGS.patience:
                 patience = 0

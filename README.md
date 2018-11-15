@@ -18,7 +18,6 @@ First install tensorflow, then install other Python packages:
 - [Learning a Discriminative Filter Bank within a CNN for Fine-grained Recognition](https://arxiv.org/abs/1611.09932)
 
 
-
 ## TODO
 
 - [ ] Nonrandomly initialization
