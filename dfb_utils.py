@@ -16,6 +16,7 @@ def accuracy_top1(y_true, predictions):
 def accuracy_top5(y_true, predictions):
     acc_top5 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(predictions, tf.argmax(y_true, axis=-1), k=5), tf.float32), axis=-1)
     return acc_top5   
+    
 def accuracy_top3(y_true, predictions):
     acc_top3 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(predictions, tf.argmax(y_true, axis=-1), k=3), tf.float32), axis=-1)
     return acc_top3        
