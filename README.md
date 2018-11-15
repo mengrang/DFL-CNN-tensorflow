@@ -8,7 +8,7 @@ Compared to earlier multistage frameworks using CNN features, recent end-to-end 
 
 ## Framwork
 
-[framwork](framwork.png)
+![framwork](framwork.png)
 
 ## Requirements
 
