@@ -6,7 +6,7 @@ from __future__ import print_function
 import sys
 import tensorflow as tf
 from tensorflow.contrib import slim
-from models.nets.resnet_v2 import resnet_v2_50
+from models.nets.resnet import resnet_v2
 from models.nets import resnet_utils
 import os
 import time

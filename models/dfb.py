@@ -16,7 +16,7 @@ from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variable_scope
 
 from tensorflow.contrib import slim
-from models.nets.resnet_v2 import resnet_v2_50
+from models.nets.resnet import resnet_v2
 import os
 import time
 import sys
@@ -32,7 +32,7 @@ def dfb(input_images,
             batch_norm_decay=0.99,
             batch_norm_epsilon=0.001):
     with tf.variable_scope("Teacher_model"):     
-        net, endpoints = resnet_v2_50(inputs=input_images,
+        net, endpoints = resnet_v2(inputs=input_images,
                                 num_classes=M,
                                 is_training=True,
                                 scope='resnet_v2')

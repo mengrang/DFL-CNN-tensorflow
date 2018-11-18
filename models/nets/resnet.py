@@ -165,14 +165,14 @@ def resnet_v2_base(inputs,
 
 
 def resnet_v2(inputs,
-                 num_classes=1000,
-                 dropout_keep_prob=0.997,
-                 is_training=True,
-                 min_depth=8,
-                 depth_multiplier=1.0,
-                 conv_defs=None,
-                 reuse=None,
-                 scope='ResNetV2'):
+              num_classes=1000,
+              dropout_keep_prob=0.997,
+              is_training=True,
+              min_depth=8,
+              depth_multiplier=1.0,
+              conv_defs=None,
+              reuse=None,
+              scope='ResNetV2'):
  
   input_shape = inputs.get_shape().as_list()
   if len(input_shape) != 4:
