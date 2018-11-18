@@ -39,8 +39,8 @@ def dfb(input_images,
         
         base_var_list = slim.get_model_variables('Teacher_model/resnet_v2')
 
-        part_feature = endpoints["InvertedResidual_{}_{}".format(,)]
-        object_feature = endpoints["InvertedResidual_{}_{}".format(,)]
+        part_feature = endpoints["InvertedResidual_{}_{}".format(1024, 3)]
+        object_feature = endpoints["InvertedResidual_{}_{}".format(1024, 5)]
 
         object_feature_h = object_feature.get_shape().as_list()[1]
         object_feature_w = object_feature.get_shape().as_list()[2]
