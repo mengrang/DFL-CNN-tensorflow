@@ -6,14 +6,14 @@ from __future__ import print_function
 import sys
 import tensorflow as tf
 from tensorflow.contrib import slim
-from models.nets.resnet_v2 import resnet_v2
+from models.nets.resnet_v2 import resnet_v2_50
 from models.nets import resnet_utils
 import os
 import time
 import numpy as np
 from time import time
 from dataset import reader
-from models import dfb
+from models.dfb import dfb
 from dfb_opt import train
 import dfb_utils
 from PIL import Image
@@ -41,7 +41,7 @@ def main(argv=None):
     """
     ""inference
     """
-    t_co_list, t_g, t_at, fc_obj, fc_part, fc_ccp, base_var_list, t_var_list = dfb(input_images, keep_prob, is_training=is_training)
+    fc_obj, fc_part, fc_ccp, base_var_list, t_var_list = dfb(input_images, keep_prob, is_training=is_training)
     # Predictions 
     t_predictions = (tf.nn.softmax(fc_part) + 0.1 * tf.nn.softmax(fc_ccp) + tf.nn.softmax(fc_obj)) / 3.
     

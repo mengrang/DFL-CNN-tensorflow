@@ -16,7 +16,7 @@ from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variable_scope
 
 from tensorflow.contrib import slim
-from models.nets.resnet_v2 import resnet_v2
+from models.nets.resnet_v2 import resnet_v2_50
 import os
 import time
 import sys
@@ -25,40 +25,22 @@ from time import time
 
 M = 61
 k = 10
-def teacher(input_images, 
+def dfb(input_images, 
             keep_prob,
             is_training=True,
             weight_decay=5e-5,
             batch_norm_decay=0.99,
             batch_norm_epsilon=0.001):
     with tf.variable_scope("Teacher_model"):     
-        net, endpoints = resnet_v2(inputs=input_images,
+        net, endpoints = resnet_v2_50(inputs=input_images,
                                 num_classes=M,
                                 is_training=True,
                                 scope='resnet_v2')
-        # co_trained layers
-        var_scope = 'Teacher_model/resnet_v2/'
-        co_list_0 = slim.get_model_variables(var_scope + 'Conv2d_0')
-        # co_list_1 = slim.get_model_variables(var_scope +'InvertedResidual_16_0/conv')
-        # co_list_2 = slim.get_model_variables(var_scope +'InvertedResidual_24_')
-        t_co_list = co_list_0
         
         base_var_list = slim.get_model_variables('Teacher_model/resnet_v2')
 
-        # feature & attention
-        t_g0 = endpoints["InvertedResidual_{}_{}".format(256, 2)]
-        t_at0 = tf.nn.l2_normalize(tf.reduce_sum(tf.square(t_g0), -1), axis=0, name='t_at0')
-        t_g1 = endpoints["InvertedResidual_{}_{}".format(512, 3)]
-        t_at1 = tf.nn.l2_normalize(tf.reduce_sum(tf.square(t_g1), -1), axis=0, name='t_at1')
         part_feature = endpoints["InvertedResidual_{}_{}".format(1024, 3)]
-        t_at2 = tf.nn.l2_normalize(tf.reduce_sum(tf.square(part_feature), -1), axis=0, name='t_at2')
-        t_g3 = endpoints["InvertedResidual_{}_{}".format(1024, 4)]
-        t_at3 = tf.nn.l2_normalize(tf.reduce_sum(tf.square(t_g3), -1), axis=0, name='t_at3')
         object_feature = endpoints["InvertedResidual_{}_{}".format(1024, 5)]
-        t_at4 = tf.nn.l2_normalize(tf.reduce_sum(tf.square(object_feature), -1), axis=0, name='t_at4')
-        
-        t_g = (t_g0, t_g1, part_feature, object_feature)
-        t_at = (t_at0, t_at1, t_at2, t_at3, t_at4)
 
         object_feature_h = object_feature.get_shape().as_list()[1]
         object_feature_w = object_feature.get_shape().as_list()[2]
@@ -114,4 +96,4 @@ def teacher(input_images,
         fc_part = tf.nn.dropout(fc_part, keep_prob=keep_prob)
         fc_part = slim.flatten(fc_part)
         t_var_list = slim.get_model_variables()
-    return t_co_list, t_g, t_at, fc_obj, fc_part, fc_ccp, base_var_list, t_var_list
+    return fc_obj, fc_part, fc_ccp, base_var_list, t_var_list
