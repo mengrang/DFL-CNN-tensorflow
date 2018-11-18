@@ -11,7 +11,7 @@ tf.app.flags.DEFINE_string(name="test_dir", default="", help="The directory to t
 
 tf.app.flags.DEFINE_string(name="valid_dir", default="", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="logs_dir", default="")
+tf.app.flags.DEFINE_string(name="logs_dir", default=""，help="The directory to the logs.")
 
 tf.app.flags.DEFINE_integer(name="batch_size", default=55, help="The number of samples in each batch.")
 
