@@ -1,4 +1,4 @@
-# Distiller-for-Fine-grained-Recognition
+# DFL-CNN-tensorflow
 
 Implementation of the CVPR2018 [Learning a Discriminative Filter Bank within a CNN for Fine-grained Recognition](https://arxiv.org/abs/1611.09932) in Tensorflow. 
 
