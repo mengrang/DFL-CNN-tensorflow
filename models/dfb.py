@@ -16,7 +16,7 @@ from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variable_scope
 
 from tensorflow.contrib import slim
-from nets.resnet import resnet_v2
+from models.nets.resnet_v2 import resnet_v2
 import os
 import time
 import sys

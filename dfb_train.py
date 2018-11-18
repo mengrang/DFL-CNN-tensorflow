@@ -2,55 +2,26 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
 import sys
 import tensorflow as tf
 from tensorflow.contrib import slim
-from resnet import resnet_v2
+from models.nets.resnet_v2 import resnet_v2
+from models.nets import resnet_utils
 import os
 import time
 import numpy as np
 from time import time
 from dataset import reader
-from models.dfb import dfb
+from models import dfb
 from dfb_opt import train
 import dfb_utils
 from PIL import Image
+from config import *
 
-"""
-" Log Configuration
-"""
-tf.app.flags.DEFINE_string(name="data_dir", default="", help="The directory to the dataset.")
-
-tf.app.flags.DEFINE_string(name="train_dir", default="", help="The directory to the dataset.")
-
-tf.app.flags.DEFINE_string(name="test_dir", default="", help="The directory to the dataset.")
-
-tf.app.flags.DEFINE_string(name="valid_dir", default="", help="The directory to the dataset.")
-
-tf.app.flags.DEFINE_string(name="logs_dir", default="")
-
-tf.app.flags.DEFINE_integer(name="batch_size", default=55, help="The number of samples in each batch.")
-
-tf.app.flags.DEFINE_integer(name="num_class", default=61, help="The number of classes.")
-
-tf.app.flags.DEFINE_integer(name="epoches", default=1000, help="The number of training epoch.") 
-
-tf.app.flags.DEFINE_integer(name="verbose", default=8, help="The number of training step to show the loss and accuracy.")
-
-tf.app.flags.DEFINE_integer(name="patience", default=2, help="The patience of the early stop.")
-
-tf.app.flags.DEFINE_boolean(name="debug", default=True, help="Debug mode or not")
-
-tf.flags.DEFINE_string(name="mode", default="train", help="Mode train/ test/ visualize")
-
-"""
-" Local Parameters
-"""
-FLAGS = tf.app.flags.FLAGS
 
 M = FLAGS.num_class
 k = 10
-
 
 def main(argv=None):
     is_training = True
@@ -101,28 +72,16 @@ def main(argv=None):
     """
     print("Loading Data......")
     if FLAGS.mode == 'train':
-        X_train, Y_train = reader.data_reader(FLAGS.data_dir, FLAGS.train_dir, 'AgriculturalDisease_train_pad_annotations.json')
+        X_train, Y_train = reader.generator(FLAGS.data_dir, FLAGS.train_dir, 'AgriculturalDisease_train_pad_annotations.json', 'images', FLAGS.batch_size)
         print(len(X_train))
         print(len(Y_train))
         print("\tLoaded Train Data......")
 
-    X_test, Y_test = reader.data_reader(FLAGS.data_dir, FLAGS.valid_dir, 'AgriculturalDisease_validation_pad_annotations.json')  
+    X_test, Y_test = reader.data_reader(FLAGS.data_dir, FLAGS.valid_dir, 'AgriculturalDisease_validation_pad_annotations.json', 'images', FLAGS.batch_size)  
     print(len(X_test))
     print(len(Y_test))
     print("\tLoaded Test Data......")  
     print("Verifying the data......")
-    # for i in range(100):
-    #     if i*200 > 6000:
-    #         break
-    #     train_img = X_train[i*100]
-    #     test_img = X_test[i*200]
-    #     cv2.imshow("Train", np.uint8(train_img))
-    #     cv2.imshow("Test", np.uint8(test_img))
-    #
-    #     print(i, "Train class id", np.argmax(Y_train[i*100], axis=0))
-    #     print(i, "Test class id", np.argmax(Y_test[i*200], axis=0))
-    #     cv2.waitKey()
-    # exit()
     
     """
     " Setting up Saver
