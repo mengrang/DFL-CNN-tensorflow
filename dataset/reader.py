@@ -9,12 +9,13 @@ import math
 import time
 from skimage import transform
 from PIL import Image, ImageEnhance, ImageFilter
+from config import *
 
 def cv_imread(filePath):
     cv_img = cv2.imdecode(np.fromfile(filePath, dtype=np.uint8), -1)
     return cv_img
-def get_aug_data(data_dir, split_dir, image_dir, py_dict, norm=True):
-    split_path = os.path.join(data_dir, split_dir)
+def get_aug_data(split_dir, image_dir, py_dict, norm=True):
+    split_path = os.path.join(FLAGS.data_dir, split_dir)
     image_path = os.path.join(split_path, image_dir)   
     disease_class = py_dict['disease_class']
     image_id = py_dict['image_id']
@@ -38,9 +39,9 @@ def get_aug_data(data_dir, split_dir, image_dir, py_dict, norm=True):
         img = img / 255.
     return img, label 
 
-def aux_generator(data_dir, split_dir, json_file, image_dir, batch_size, norm=True):
+def aux_generator(split_dir, json_file, image_dir, norm=True):
     # path
-    split_path = os.path.join(data_dir, split_dir)
+    split_path = os.path.join(FLAGS.data_dir, split_dir)
     image_path = os.path.join(split_path, image_dir)   
     with open(os.path.join(split_path, json_file), 'r', encoding='utf-8') as f:
         py_list = json.load(f)   
@@ -51,9 +52,9 @@ def aux_generator(data_dir, split_dir, json_file, image_dir, batch_size, norm=Tr
         images = []
         labels = []
         i = 0
-        while i < batch_size:
+        while i < FLAGS.batch_size:
             random.shuffle(py_list)
-            img, label = get_aug_data(data_dir, split_dir, image_dir, py_list[i], norm)
+            img, label = get_aug_data(split_dir, image_dir, py_list[i], norm)
             images.append(img)
             labels.append(label)
             i += 1
@@ -61,8 +62,8 @@ def aux_generator(data_dir, split_dir, json_file, image_dir, batch_size, norm=Tr
         labels = np.asarray(labels)
         yield images, labels
 
-def generator(data_dir, split_dir, json_file, image_dir, batch_size, norm=True):
-    return aux_generator(data_dir, split_dir, json_file, image_dir, batch_size, norm)
+def generator(split_dir, json_file, image_dir, norm=True):
+    return aux_generator(split_dir, json_file, image_dir, norm)
 
 def _color_augment(image):
     image.flags.writeable = True  # 将数组改为读写模式
