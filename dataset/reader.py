@@ -39,10 +39,10 @@ def get_aug_data(split_dir, image_dir, py_dict, norm=True):
         img = img / 255.
     return img, label 
 
-def aux_generator(split_dir, json_file, image_dir, norm=True):
+def aux_generator(split_dir, json_file, norm=True):
     # path
     split_path = os.path.join(FLAGS.data_dir, split_dir)
-    image_path = os.path.join(split_path, image_dir)   
+    image_path = os.path.join(split_path, 'pad_images')   
     with open(os.path.join(split_path, json_file), 'r', encoding='utf-8') as f:
         py_list = json.load(f)   
     images = []
@@ -54,7 +54,7 @@ def aux_generator(split_dir, json_file, image_dir, norm=True):
         i = 0
         while i < FLAGS.batch_size:
             random.shuffle(py_list)
-            img, label = get_aug_data(split_dir, image_dir, py_list[i], norm)
+            img, label = get_aug_data(split_dir, 'pad_images', py_list[i], norm)
             images.append(img)
             labels.append(label)
             i += 1
@@ -62,8 +62,8 @@ def aux_generator(split_dir, json_file, image_dir, norm=True):
         labels = np.asarray(labels)
         yield images, labels
 
-def generator(split_dir, json_file, image_dir, norm=True):
-    return aux_generator(split_dir, json_file, image_dir, norm)
+def generator(split_dir, json_file, norm=True):
+    return aux_generator(split_dir, json_file, norm)
 
 def _color_augment(image):
     image.flags.writeable = True  # 将数组改为读写模式

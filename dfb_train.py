@@ -72,16 +72,11 @@ def main(argv=None):
     """
     print("Loading Data......")
     if FLAGS.mode == 'train':
-        X_train, Y_train = reader.generator(FLAGS.train_dir, FLAGS.train_json, 'pad_images')
-        print(len(X_train))
-        print(len(Y_train))
+        generator_train = reader.generator(FLAGS.train_dir, FLAGS.train_json)  
         print("\tLoaded Train Data......")
 
-    X_test, Y_test = reader.generator(FLAGS.valid_dir, FLAGS.valid_json, 'pad_images')  
-    print(len(X_test))
-    print(len(Y_test))
-    print("\tLoaded Test Data......")  
-    print("Verifying the data......")
+    generator_valid = reader.generator(FLAGS.valid_dir, FLAGS.valid_json) 
+    print("\tLoaded Validation Data......")
     
     """
     " Setting up Saver
@@ -112,8 +107,8 @@ def main(argv=None):
     " Training...
     """
     if FLAGS.mode == 'train':                              
-        train_batch = int(len(X_train) / FLAGS.batch_size)
-        valid_batch = int(len(X_test) / FLAGS.batch_size)
+        train_batch = int(FLAGS.num_train / FLAGS.batch_size)
+        valid_batch = int(FLAGS.num_valid / FLAGS.batch_size)
         last_loss = 10000.
         patience = 0
         best_acc = 0.0
@@ -132,8 +127,7 @@ def main(argv=None):
             elif epoch > 10:
                 lr = current 
             for step in range(train_batch):
-                batch_x = X_train[step * FLAGS.batch_size: (step + 1) * FLAGS.batch_size]
-                batch_y = Y_train[step * FLAGS.batch_size: (step + 1) * FLAGS.batch_size]
+                batch_x, batch_y = next(generator_train)
                 summary, _ , loss_t, loss_ct, loss_ot, loss_pt, acc_1t, acc_5t = \
                     sess.run([summary_op, train_op, loss, ccp_loss, obj_loss, part_loss, acc_top1, acc_top5],
                                     feed_dict={input_images: batch_x,
@@ -149,8 +143,7 @@ def main(argv=None):
             acc5_reg = []
             loss_reg = []
             for step in range(valid_batch):
-                batch_x = X_test[step * FLAGS.batch_size: (step + 1) * FLAGS.batch_size]
-                batch_y = Y_test[step * FLAGS.batch_size: (step + 1) * FLAGS.batch_size]
+                batch_x, batch_y = next(generator_valid)
                 loss_v, acc_1v, acc_5v, summary = sess.run([loss, acc_top1, acc_top5, summary_op],
                                                         feed_dict={input_images: batch_x,
                                                                     y_true: batch_y,

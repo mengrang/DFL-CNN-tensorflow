@@ -21,6 +21,11 @@ tf.app.flags.DEFINE_integer(name="batch_size", default=55, help="The number of s
 
 tf.app.flags.DEFINE_integer(name="num_class", default=61, help="The number of classes.")
 
+tf.app.flags.DEFINE_integer(name="num_train", default=31000, help="The number of trainset.")
+
+tf.app.flags.DEFINE_integer(name="num_valid", default=4000, help="The number of validset.")
+
+
 tf.app.flags.DEFINE_integer(name="epoches", default=1000, help="The number of training epoch.") 
 
 tf.app.flags.DEFINE_integer(name="verbose", default=8, help="The number of training step to show the loss and accuracy.")
