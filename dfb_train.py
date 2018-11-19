@@ -72,12 +72,12 @@ def main(argv=None):
     """
     print("Loading Data......")
     if FLAGS.mode == 'train':
-        X_train, Y_train = reader.generator(FLAGS.data_dir, FLAGS.train_dir, 'AgriculturalDisease_train_pad_annotations.json', 'images', FLAGS.batch_size)
+        X_train, Y_train = reader.generator(FLAGS.data_dir, FLAGS.train_dir, FLAGS.train_json, 'pad_images', FLAGS.batch_size)
         print(len(X_train))
         print(len(Y_train))
         print("\tLoaded Train Data......")
 
-    X_test, Y_test = reader.data_reader(FLAGS.data_dir, FLAGS.valid_dir, 'AgriculturalDisease_validation_pad_annotations.json', 'images', FLAGS.batch_size)  
+    X_test, Y_test = reader.generator(FLAGS.data_dir, FLAGS.valid_dir, FLAGS.valid_json, 'pad_images', FLAGS.batch_size)  
     print(len(X_test))
     print(len(Y_test))
     print("\tLoaded Test Data......")  

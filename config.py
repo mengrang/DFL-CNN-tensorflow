@@ -3,13 +3,17 @@ import tensorflow as tf
 """
 " Log Configuration
 """
-tf.app.flags.DEFINE_string(name="data_dir", default="", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="data_dir", default="E:\plant", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="train_dir", default="", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="train_dir", default="pdr2018_trainingset_20181023", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="test_dir", default="", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="test_dir", default="pdr2018_testa_20181023", help="The directory to the dataset.")
 
-tf.app.flags.DEFINE_string(name="valid_dir", default="", help="The directory to the dataset.")
+tf.app.flags.DEFINE_string(name="valid_dir", default="pdr2018_validationset_20181023", help="The directory to the dataset.")
+
+tf.app.flags.DEFINE_string(name="train_json", default="AgriculturalDisease_train_annotations.json", help="The jsonname.")
+
+tf.app.flags.DEFINE_string(name="valid_json", default="AgriculturalDisease_validation_annotations.json", help="The jsonname.")
 
 tf.app.flags.DEFINE_string(name="logs_dir", default="", help="The directory to the logs.")
 
